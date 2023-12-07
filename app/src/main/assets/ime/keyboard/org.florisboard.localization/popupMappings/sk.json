@@ -2,14 +2,12 @@
   "all": {
     "e": {
       "relevant": [
-        { "$": "auto_text_key", "code":  233, "label": "é" },
-        { "$": "auto_text_key", "code":  283, "label": "ě" }
+        { "$": "auto_text_key", "code":  233, "label": "é" }
       ]
     },
     "r": {
       "relevant": [
-        { "$": "auto_text_key", "code":  341, "label": "ŕ" },
-        { "$": "auto_text_key", "code":  345, "label": "ř" }
+        { "$": "auto_text_key", "code":  341, "label": "ŕ" }
       ]
     },
     "t": {
@@ -24,8 +22,7 @@
     },
     "u": {
       "relevant": [
-        { "$": "auto_text_key", "code":  250, "label": "ú" },
-        { "$": "auto_text_key", "code":  367, "label": "ů" }
+        { "$": "auto_text_key", "code":  250, "label": "ú" }
       ]
     },
     "i": {
