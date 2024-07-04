@@ -25,8 +25,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
@@ -41,6 +41,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import dev.patrickgold.florisboard.R
 import dev.patrickgold.florisboard.app.apptheme.FlorisAppTheme
+import dev.patrickgold.florisboard.app.setup.NotificationPermissionState
 import dev.patrickgold.florisboard.lib.FlorisLocale
 import dev.patrickgold.florisboard.lib.android.AndroidVersion
 import dev.patrickgold.florisboard.lib.android.hideAppIcon
@@ -49,7 +50,6 @@ import dev.patrickgold.florisboard.lib.android.showAppIcon
 import dev.patrickgold.florisboard.lib.compose.LocalPreviewFieldController
 import dev.patrickgold.florisboard.lib.compose.PreviewKeyboardField
 import dev.patrickgold.florisboard.lib.compose.ProvideLocalizedResources
-import dev.patrickgold.florisboard.lib.compose.SystemUiApp
 import dev.patrickgold.florisboard.lib.compose.rememberPreviewFieldController
 import dev.patrickgold.florisboard.lib.compose.stringRes
 import dev.patrickgold.florisboard.lib.util.AppVersionUtils
@@ -96,15 +96,23 @@ class FlorisAppActivity : ComponentActivity() {
             }
         }
 
+        //Check if android 13+ is running and the NotificationPermission is not set
+        if (AndroidVersion.ATLEAST_API33_T &&
+            prefs.internal.notificationPermissionState.get() == NotificationPermissionState.NOT_SET
+        ) {
+            // update pref value to show the setup screen again again
+            prefs.internal.isImeSetUp.set(false)
+        }
+
         // We defer the setContent call until the datastore model is loaded, until then the splash screen stays drawn
         prefs.datastoreReadyStatus.observe(this) { isModelLoaded ->
             if (!isModelLoaded) return@observe
             AppVersionUtils.updateVersionOnInstallAndLastUse(this, prefs)
             setContent {
                 ProvideLocalizedResources(resourcesContext) {
-                    FlorisAppTheme(theme = appTheme) {
-                        Surface(color = MaterialTheme.colors.background) {
-                            SystemUiApp()
+                    FlorisAppTheme(theme = appTheme, isMaterialYouAware = prefs.advanced.useMaterialYou.observeAsState().value) {
+                        Surface(color = MaterialTheme.colorScheme.background) {
+                            //SystemUiApp()
                             AppContent()
                         }
                     }
@@ -145,7 +153,7 @@ class FlorisAppActivity : ComponentActivity() {
             ) {
                 Column(
                     modifier = Modifier
-                        .statusBarsPadding()
+                        //.statusBarsPadding()
                         .navigationBarsPadding()
                         .imePadding(),
                 ) {

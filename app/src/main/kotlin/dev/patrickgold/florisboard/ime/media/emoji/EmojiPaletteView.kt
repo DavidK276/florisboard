@@ -24,6 +24,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -52,6 +54,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -64,7 +67,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
@@ -75,7 +77,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Popup
 import androidx.emoji2.text.EmojiCompat
 import androidx.emoji2.widget.EmojiTextView
-import com.google.accompanist.flowlayout.FlowRow
 import dev.patrickgold.florisboard.R
 import dev.patrickgold.florisboard.app.florisPreferenceModel
 import dev.patrickgold.florisboard.editorInstance
@@ -85,7 +86,9 @@ import dev.patrickgold.florisboard.ime.text.keyboard.TextKeyData
 import dev.patrickgold.florisboard.ime.theme.FlorisImeTheme
 import dev.patrickgold.florisboard.ime.theme.FlorisImeUi
 import dev.patrickgold.florisboard.keyboardManager
+import dev.patrickgold.florisboard.lib.android.AndroidKeyguardManager
 import dev.patrickgold.florisboard.lib.android.showShortToast
+import dev.patrickgold.florisboard.lib.android.systemService
 import dev.patrickgold.florisboard.lib.compose.florisScrollbar
 import dev.patrickgold.florisboard.lib.compose.safeTimes
 import dev.patrickgold.florisboard.lib.compose.stringRes
@@ -100,7 +103,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.ceil
 
-private val EmojiCategoryValues = EmojiCategory.values()
+private val EmojiCategoryValues = EmojiCategory.entries
 private val EmojiBaseWidth = 42.dp
 private val EmojiDefaultFontSize = 22.sp
 
@@ -118,7 +121,7 @@ private val VariantsTriangleShapeRtl = GenericShape { size, _ ->
 
 @Composable
 fun EmojiPaletteView(
-    fullEmojiMappings: EmojiLayoutDataMap,
+    fullEmojiMappings: EmojiData,
     modifier: Modifier = Modifier,
 ) {
     val prefs by florisPreferenceModel()
@@ -136,7 +139,7 @@ fun EmojiPaletteView(
     val replaceAll = activeEditorInfo.emojiCompatReplaceAll
     val emojiCompatInstance by FlorisEmojiCompat.getAsFlow(replaceAll).collectAsState()
     val emojiMappings = remember(emojiCompatInstance, fullEmojiMappings, metadataVersion, systemFontPaint) {
-        fullEmojiMappings.mapValues { (_, emojiSetList) ->
+        fullEmojiMappings.byCategory.mapValues { (_, emojiSetList) ->
             emojiSetList.mapNotNull { emojiSet ->
                 emojiSet.emojis.filter { emoji ->
                     emojiCompatInstance?.getEmojiMatch(emoji.value, metadataVersion) == EmojiCompat.EMOJI_SUPPORTED ||
@@ -145,6 +148,9 @@ fun EmojiPaletteView(
             }
         }
     }
+    val androidKeyguardManager = remember { context.systemService(AndroidKeyguardManager::class) }
+
+    val deviceLocked = androidKeyguardManager.let { it.isDeviceLocked || it.isKeyguardLocked }
 
     var activeCategory by remember { mutableStateOf(EmojiCategory.RECENTLY_USED) }
     val lazyListState = rememberLazyGridState()
@@ -170,7 +176,7 @@ fun EmojiPaletteView(
                 .fillMaxWidth()
                 .weight(1f),
         ) {
-            var recentlyUsedVersion by remember { mutableStateOf(0) }
+            var recentlyUsedVersion by remember { mutableIntStateOf(0) }
             val emojiMapping = if (activeCategory == EmojiCategory.RECENTLY_USED) {
                 // Purposely using remember here to prevent recomposition, as this would cause rapid
                 // emoji changes for the user when in recently used category.
@@ -180,8 +186,18 @@ fun EmojiPaletteView(
             } else {
                 emojiMappings[activeCategory]!!
             }
-
-            if (activeCategory == EmojiCategory.RECENTLY_USED && emojiMapping.isEmpty()) {
+            if (activeCategory == EmojiCategory.RECENTLY_USED && deviceLocked) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(all = 8.dp),
+                ) {
+                    Text(
+                        text = stringRes(R.string.emoji__recently_used__phone_locked_message),
+                        color = contentColor,
+                    )
+                }
+            } else if (activeCategory == EmojiCategory.RECENTLY_USED && emojiMapping.isEmpty()) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -198,12 +214,13 @@ fun EmojiPaletteView(
                         fontStyle = FontStyle.Italic,
                     )
                 }
-            } else key(emojiMapping) {
+            }
+            else key(emojiMapping) {
                 CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                     LazyVerticalGrid(
                         modifier = Modifier
                             .fillMaxSize()
-                            /*.florisScrollbar(lazyListState, color = contentColor.copy(alpha = 0.28f), isVertical = true)*/,
+                            .florisScrollbar(lazyListState, color = contentColor.copy(alpha = 0.28f)),
                         columns = GridCells.Adaptive(minSize = EmojiBaseWidth),
                         state = lazyListState,
                     ) {
@@ -283,7 +300,7 @@ private fun EmojiCategoriesTabRow(
                 selected = activeCategory == category,
                 icon = { Icon(
                     modifier = Modifier.size(ButtonDefaults.IconSize),
-                    painter = painterResource(category.iconId()),
+                    imageVector = category.icon(),
                     contentDescription = null,
                 ) },
                 unselectedContentColor = unselectedContentColor,
@@ -367,6 +384,7 @@ private fun EmojiKey(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun EmojiVariationsPopup(
     variations: List<Emoji>,

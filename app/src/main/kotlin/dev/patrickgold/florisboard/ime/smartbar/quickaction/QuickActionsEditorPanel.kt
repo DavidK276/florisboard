@@ -33,6 +33,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
@@ -262,7 +264,7 @@ fun QuickActionsEditorPanel(modifier: Modifier = Modifier) {
                 onClick = {
                     keyboardManager.activeState.isActionsEditorVisible = false
                 },
-                icon = painterResource(R.drawable.ic_keyboard_arrow_left),
+                icon = Icons.Default.KeyboardArrowLeft,
                 iconColor = headerStyle.foreground.solidColor(context, default = FlorisImeTheme.fallbackContentColor()),
             )
             Text(
@@ -301,7 +303,7 @@ fun QuickActionsEditorPanel(modifier: Modifier = Modifier) {
                         modifier = Modifier.animateItemPlacement(),
                         action = stickyAction,
                         evaluator = evaluator,
-                        type = QabType.STATIC_TILE,
+                        type = QuickActionBarType.STATIC_TILE,
                     )
                 }
                 item(span = { GridItemSpan(maxLineSpan) }) {
@@ -316,7 +318,7 @@ fun QuickActionsEditorPanel(modifier: Modifier = Modifier) {
                         modifier = Modifier.animateItemPlacement(),
                         action = action,
                         evaluator = evaluator,
-                        type = QabType.STATIC_TILE,
+                        type = QuickActionBarType.STATIC_TILE,
                     )
                 }
                 item(span = { GridItemSpan(maxLineSpan) }) {
@@ -331,7 +333,7 @@ fun QuickActionsEditorPanel(modifier: Modifier = Modifier) {
                         modifier = Modifier.animateItemPlacement(),
                         action = action,
                         evaluator = evaluator,
-                        type = QabType.STATIC_TILE,
+                        type = QuickActionBarType.STATIC_TILE,
                     )
                 }
             }
@@ -346,7 +348,7 @@ fun QuickActionsEditorPanel(modifier: Modifier = Modifier) {
                         .offset(-size.width / 2, -size.height / 2),
                     action = activeDragAction!!,
                     evaluator = evaluator,
-                    type = QabType.STATIC_TILE,
+                    type = QuickActionBarType.STATIC_TILE,
                 )
             }
         }

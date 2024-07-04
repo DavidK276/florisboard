@@ -46,11 +46,19 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ClearAll
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ToggleOff
+import androidx.compose.material.icons.filled.ToggleOn
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -74,7 +82,6 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.patrickgold.florisboard.R
-import dev.patrickgold.florisboard.app.apptheme.Green500
 import dev.patrickgold.florisboard.app.florisPreferenceModel
 import dev.patrickgold.florisboard.clipboardManager
 import dev.patrickgold.florisboard.ime.ImeUiMode
@@ -151,8 +158,7 @@ fun ClipboardInputLayout(
         ) {
             FlorisIconButtonWithInnerPadding(
                 onClick = { keyboardManager.activeState.imeUiMode = ImeUiMode.TEXT },
-                modifier = Modifier.autoMirrorForRtl(),
-                icon = painterResource(R.drawable.ic_arrow_back),
+                icon = Icons.AutoMirrored.Filled.ArrowBack,
                 iconColor = headerStyle.foreground.solidColor(context),
             )
             Text(
@@ -164,18 +170,18 @@ fun ClipboardInputLayout(
             FlorisIconButtonWithInnerPadding(
                 onClick = { prefs.clipboard.historyEnabled.set(!historyEnabled) },
                 modifier = Modifier.autoMirrorForRtl(),
-                icon = painterResource(if (historyEnabled) {
-                    R.drawable.ic_toggle_on
+                icon = if (historyEnabled) {
+                    Icons.Default.ToggleOn
                 } else {
-                    R.drawable.ic_toggle_off
-                }),
+                    Icons.Default.ToggleOff
+                },
                 iconColor = headerStyle.foreground.solidColor(context),
                 enabled = !deviceLocked && !isPopupSurfaceActive(),
             )
             FlorisIconButtonWithInnerPadding(
                 onClick = { showClearAllHistory = true },
                 modifier = Modifier.autoMirrorForRtl(),
-                icon = painterResource(R.drawable.ic_clear_all),
+                icon = Icons.Default.ClearAll,
                 iconColor = headerStyle.foreground.solidColor(context),
                 enabled = !deviceLocked && historyEnabled && history.all.isNotEmpty() && !isPopupSurfaceActive(),
             )
@@ -183,7 +189,7 @@ fun ClipboardInputLayout(
                 onClick = {
                     context.showShortToast("TODO: implement inline clip item editing")
                 },
-                icon = painterResource(R.drawable.ic_edit),
+                icon = Icons.Default.Edit,
                 iconColor = headerStyle.foreground.solidColor(context),
                 enabled = !deviceLocked && historyEnabled && !isPopupSurfaceActive(),
             )
@@ -277,7 +283,7 @@ fun ClipboardInputLayout(
                             .align(Alignment.BottomStart)
                             .padding(start = 4.dp, bottom = 4.dp)
                             .background(Color.White, CircleShape),
-                        painter = painterResource(R.drawable.ic_videocam),
+                        imageVector = Icons.Default.Videocam,
                         contentDescription = null,
                         tint = Color.Black,
                     )
@@ -536,7 +542,7 @@ fun ClipboardInputLayout(
                             .align(Alignment.End),
                         onClick = { prefs.clipboard.historyEnabled.set(true) },
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = Green500,
+                            containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = Color.White,
                         ),
                     ) {

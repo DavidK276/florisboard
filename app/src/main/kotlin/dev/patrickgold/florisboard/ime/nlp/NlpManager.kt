@@ -29,16 +29,17 @@ import androidx.lifecycle.MutableLiveData
 import dev.patrickgold.florisboard.app.florisPreferenceModel
 import dev.patrickgold.florisboard.clipboardManager
 import dev.patrickgold.florisboard.editorInstance
+import dev.patrickgold.florisboard.ime.clipboard.provider.ClipboardItem
 import dev.patrickgold.florisboard.ime.clipboard.provider.ItemType
 import dev.patrickgold.florisboard.ime.core.Subtype
 import dev.patrickgold.florisboard.ime.editor.EditorContent
 import dev.patrickgold.florisboard.ime.editor.EditorRange
-import dev.patrickgold.florisboard.ime.nlp.latin.LatinLanguageProvider
+import dev.patrickgold.florisboard.ime.media.emoji.EMOJI_SUGGESTION_MAX_COUNT
+import dev.patrickgold.florisboard.ime.media.emoji.EmojiSuggestionProvider
 import dev.patrickgold.florisboard.ime.nlp.han.HanShapeBasedLanguageProvider
+import dev.patrickgold.florisboard.ime.nlp.latin.LatinLanguageProvider
 import dev.patrickgold.florisboard.keyboardManager
 import dev.patrickgold.florisboard.lib.devtools.flogError
-import dev.patrickgold.florisboard.lib.kotlin.collectLatestIn
-import dev.patrickgold.florisboard.lib.kotlin.guardedByLock
 import dev.patrickgold.florisboard.lib.util.NetworkUtils
 import dev.patrickgold.florisboard.subtypeManager
 import kotlinx.coroutines.CoroutineScope
@@ -50,12 +51,18 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.florisboard.lib.kotlin.collectLatestIn
+import org.florisboard.lib.kotlin.guardedByLock
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.properties.Delegates
 
+private const val BLANK_STR_PATTERN = "^\\s*$"
+
 class NlpManager(context: Context) {
+    private val blankStrRegex = Regex(BLANK_STR_PATTERN)
+
     private val prefs by florisPreferenceModel()
     private val clipboardManager by context.clipboardManager()
     private val editorInstance by context.editorInstance()
@@ -64,6 +71,7 @@ class NlpManager(context: Context) {
 
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val clipboardSuggestionProvider = ClipboardSuggestionProvider()
+    private val emojiSuggestionProvider = EmojiSuggestionProvider(context)
     private val providers = guardedByLock {
         mapOf(
             LatinLanguageProvider.ProviderId to ProviderInstanceWrapper(LatinLanguageProvider(context)),
@@ -142,6 +150,7 @@ class NlpManager(context: Context) {
 
     fun preload(subtype: Subtype) {
         scope.launch {
+            emojiSuggestionProvider.preload(subtype)
             providers.withLock { providers ->
                 subtype.nlpProviders.forEach { _, providerId ->
                     providers[providerId]?.let { provider ->
@@ -258,16 +267,24 @@ class NlpManager(context: Context) {
         runBlocking {
             val candidates = when {
                 isSuggestionOn() -> {
-                    clipboardSuggestionProvider.suggest(
-                        subtype = Subtype.DEFAULT,
+                    emojiSuggestionProvider.suggest(
+                        subtype = subtypeManager.activeSubtype,
                         content = editorInstance.activeContent,
-                        maxCandidateCount = 8,
+                        maxCandidateCount = EMOJI_SUGGESTION_MAX_COUNT,
                         allowPossiblyOffensive = !prefs.suggestion.blockPossiblyOffensive.get(),
                         isPrivateSession = keyboardManager.activeState.isIncognitoMode,
                     ).ifEmpty {
-                        buildList {
-                            internalSuggestionsGuard.withLock {
-                                addAll(internalSuggestions.second)
+                        clipboardSuggestionProvider.suggest(
+                            subtype = Subtype.DEFAULT,
+                            content = editorInstance.activeContent,
+                            maxCandidateCount = 8,
+                            allowPossiblyOffensive = !prefs.suggestion.blockPossiblyOffensive.get(),
+                            isPrivateSession = keyboardManager.activeState.isIncognitoMode,
+                        ).ifEmpty {
+                            buildList {
+                                internalSuggestionsGuard.withLock {
+                                    addAll(internalSuggestions.second)
+                                }
                             }
                         }
                     }
@@ -390,10 +407,8 @@ class NlpManager(context: Context) {
             // Check if enabled
             if (!prefs.suggestion.clipboardContentEnabled.get()) return emptyList()
 
-            // Check if already used
-            val currentItem = clipboardManager.primaryClip
-            val lastItemId = lastClipboardItemId
-            if (currentItem == null || currentItem.id == lastItemId || content.text.isNotBlank()) return emptyList()
+            val currentItem = validateClipboardItem(clipboardManager.primaryClip, lastClipboardItemId, content.text)
+                ?: return emptyList()
 
             return buildList {
                 val now = System.currentTimeMillis()
@@ -459,5 +474,16 @@ class NlpManager(context: Context) {
         override suspend fun destroy() {
             // Do nothing
         }
+
+        private fun validateClipboardItem(currentItem: ClipboardItem?, lastItemId: Long, contentText: String) =
+            currentItem?.takeIf {
+                // Check if already used
+                it.id != lastItemId
+                    // Check if content is empty
+                    && contentText.isBlank()
+                    // Check if clipboard content has any valid characters
+                    && !currentItem.text.isNullOrBlank()
+                    && !blankStrRegex.matches(currentItem.text)
+            }
     }
 }

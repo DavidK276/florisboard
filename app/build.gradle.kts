@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-// Suppress needed until https://youtrack.jetbrains.com/issue/KTIJ-19369 is fixed
-@file:Suppress("DSL_SCOPE_VIOLATION")
-
 import java.io.ByteArrayOutputStream
-import java.io.File
 
 plugins {
     alias(libs.plugins.agp.application)
@@ -29,11 +25,20 @@ plugins {
     alias(libs.plugins.mikepenz.aboutlibraries)
 }
 
+val projectMinSdk: String by project
+val projectTargetSdk: String by project
+val projectCompileSdk: String by project
+val projectBuildToolsVersion: String by project
+val projectNdkVersion: String by project
+val projectVersionCode: String by project
+val projectVersionName: String by project
+val projectVersionNameSuffix: String by project
+
 android {
     namespace = "dev.patrickgold.florisboard"
-    compileSdk = 33
-    buildToolsVersion = "33.0.2"
-    ndkVersion = "25.2.9519653"
+    compileSdk = projectCompileSdk.toInt()
+    buildToolsVersion = projectBuildToolsVersion
+    ndkVersion = projectNdkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -51,10 +56,10 @@ android {
 
     defaultConfig {
         applicationId = "dev.patrickgold.florisboard"
-        minSdk = 24
-        targetSdk = 33
-        versionCode = 90
-        versionName = "0.4.0"
+        minSdk = projectMinSdk.toInt()
+        targetSdk = projectTargetSdk.toInt()
+        versionCode = projectVersionCode.toInt()
+        versionName = projectVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -64,23 +69,6 @@ android {
             arg("room.schemaLocation", "$projectDir/schemas")
             arg("room.incremental", "true")
             arg("room.expandProjection", "true")
-        }
-
-        externalNativeBuild {
-            cmake {
-                targets("florisboard-native")
-                cppFlags("-std=c++20", "-stdlib=libc++")
-                arguments(
-                    "-DCMAKE_ANDROID_API=" + minSdk.toString(),
-                    "-DICU_ASSET_EXPORT_DIR=" + project.file("src/main/assets/icu4c").absolutePath,
-                    "-DBUILD_SHARED_LIBS=false",
-                    "-DANDROID_STL=c++_static",
-                )
-            }
-        }
-
-        ndk {
-            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
         }
 
         sourceSets {
@@ -105,17 +93,12 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
-    }
-
-    externalNativeBuild {
-        cmake {
-            path("src/main/cpp/CMakeLists.txt")
-        }
     }
 
     buildTypes {
@@ -126,11 +109,6 @@ android {
             isDebuggable = true
             isJniDebuggable = false
 
-            ndk {
-                // For running FlorisBoard on the emulator
-                // abiFilters += listOf("x86", "x86_64")
-            }
-
             resValue("mipmap", "floris_app_icon", "@mipmap/ic_app_icon_debug")
             resValue("mipmap", "floris_app_icon_round", "@mipmap/ic_app_icon_debug_round")
             resValue("drawable", "floris_app_icon_foreground", "@drawable/ic_app_icon_debug_foreground")
@@ -139,7 +117,7 @@ android {
 
         create("beta") {
             applicationIdSuffix = ".beta"
-            versionNameSuffix = "-alpha04"
+            versionNameSuffix = projectVersionNameSuffix
 
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             isMinifyEnabled = true
@@ -152,6 +130,8 @@ android {
         }
 
         named("release") {
+            versionNameSuffix = projectVersionNameSuffix
+
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             isMinifyEnabled = true
             isShrinkResources = true
@@ -166,11 +146,6 @@ android {
             initWith(getByName("release"))
             signingConfig = signingConfigs.getByName("debug")
             matchingFallbacks += listOf("release")
-
-            ndk {
-                // For running FlorisBoard on the emulator
-                abiFilters += listOf("x86", "x86_64")
-            }
         }
     }
 
@@ -199,8 +174,6 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 }
 
 dependencies {
-    implementation(libs.accompanist.flowlayout)
-    implementation(libs.accompanist.systemuicontroller)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.autofill)
@@ -214,6 +187,8 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.emoji2)
     implementation(libs.androidx.emoji2.views)
+    implementation(libs.androidx.exifinterface)
+    implementation(libs.androidx.material.icons)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.profileinstaller)
     ksp(libs.androidx.room.compiler)
@@ -227,6 +202,9 @@ dependencies {
     implementation(libs.patrickgold.jetpref.datastore.model)
     implementation(libs.patrickgold.jetpref.datastore.ui)
     implementation(libs.patrickgold.jetpref.material.ui)
+
+    implementation(project(":lib:kotlin"))
+    implementation(project(":lib:native"))
 
     testImplementation(libs.equalsverifier)
     testImplementation(libs.kotest.assertions.core)

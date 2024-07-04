@@ -25,16 +25,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Button
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
@@ -45,7 +48,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -63,7 +65,6 @@ import dev.patrickgold.florisboard.ime.core.SubtypePreset
 import dev.patrickgold.florisboard.ime.keyboard.LayoutArrangementComponent
 import dev.patrickgold.florisboard.ime.keyboard.LayoutType
 import dev.patrickgold.florisboard.ime.keyboard.extCorePopupMapping
-import dev.patrickgold.florisboard.ime.text.key.KeyCode
 import dev.patrickgold.florisboard.ime.nlp.han.HanShapeBasedLanguageProvider
 import dev.patrickgold.florisboard.ime.nlp.latin.LatinLanguageProvider
 import dev.patrickgold.florisboard.keyboardManager
@@ -79,7 +80,6 @@ import dev.patrickgold.florisboard.subtypeManager
 import dev.patrickgold.jetpref.datastore.model.observeAsState
 import dev.patrickgold.jetpref.material.ui.JetPrefAlertDialog
 import dev.patrickgold.jetpref.material.ui.JetPrefListItem
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 
 private val SelectComponentName = ExtensionComponentName("00", "00")
@@ -124,7 +124,7 @@ private class SubtypeEditorState(init: Subtype?) {
         )
     }
 
-    val id: MutableState<Long> = mutableStateOf(init?.id ?: -1)
+    val id: MutableState<Long> = mutableLongStateOf(init?.id ?: -1)
     val primaryLocale: MutableState<FlorisLocale> = mutableStateOf(init?.primaryLocale ?: SelectLocale)
     val secondaryLocales: MutableState<List<FlorisLocale>> = mutableStateOf(init?.secondaryLocales ?: listOf())
     val nlpProviders: MutableState<SubtypeNlpProviderMap> = mutableStateOf(init?.nlpProviders ?: Subtype.DEFAULT.nlpProviders)
@@ -235,7 +235,7 @@ fun SubtypeEditorScreen(id: Long?) = FlorisScreen {
                 }
             }) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_delete),
+                    imageVector = Icons.Default.Delete,
                     contentDescription = null,
                 )
             }
@@ -278,7 +278,7 @@ fun SubtypeEditorScreen(id: Long?) = FlorisScreen {
                         Text(
                             modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
                             text = stringRes(R.string.settings__localization__suggested_subtype_presets),
-                            color = MaterialTheme.colors.primary,
+                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -385,7 +385,7 @@ fun SubtypeEditorScreen(id: Long?) = FlorisScreen {
                 )
 
                 val nlpProviderMappingIds = remember(nlpProviderMappings) {
-                    SelectListKeys + nlpProviderMappings.keys
+                    listOf(SelectNlpProviderId) + nlpProviderMappings.keys
                 }
                 val nlpProviderMappingLabels = remember(nlpProviderMappings) {
                     selectListValues + nlpProviderMappings.values.map { it }
@@ -398,8 +398,8 @@ fun SubtypeEditorScreen(id: Long?) = FlorisScreen {
                     selectedIndex = selectedIndex,
                     isError = showSelectAsError && selectedIndex == 0,
                     onSelectItem = { nlpProviders = SubtypeNlpProviderMap(
-                        suggestion = nlpProviderMappingIds[it] as String,
-                        spelling = nlpProviderMappingIds[it] as String
+                        suggestion = nlpProviderMappingIds[it],
+                        spelling = nlpProviderMappingIds[it]
                     ) },
                     onExpandRequest = { expanded = true },
                     onDismissRequest = { expanded = false },
@@ -580,7 +580,7 @@ private fun SubtypeProperty(text: String, content: @Composable () -> Unit) {
         Text(
             modifier = Modifier.padding(bottom = 8.dp),
             text = text,
-            style = MaterialTheme.typography.subtitle2,
+            style = MaterialTheme.typography.titleSmall,
         )
         content()
     }

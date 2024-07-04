@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="app_name">FlorisBoard</string>
 
     <string name="key__phone_pause" comment="Label for the Pause key in the telephone keyboard layout">Pause</string>
@@ -30,6 +30,7 @@
     <string name="emoji__category__symbols" comment="Emoji category name">Symbols</string>
     <string name="emoji__category__flags" comment="Emoji category name">Flags</string>
     <string name="emoji__recently_used__empty_message" comment="Message if no recently used emojis exist">No recently used emojis found. Once you start typing emojis they will automatically appear here.</string>
+    <string name="emoji__recently_used__phone_locked_message" comment="Message to show if phone is locked">To access your emoji history, please first unlock your device.</string>
     <string name="emoji__recently_used__removal_tip" comment="Feature discoverability for removal of recently used emojis">Pro tip: Long press recently used emojis to remove them from this view again!</string>
     <string name="emoji__recently_used__removal_success_message" comment="Toast message if user has long pressed emoji in recently used collection to remove it">Removed {emoji} from recently used emojis</string>
 
@@ -306,8 +307,8 @@
     <string name="pref__keyboard__utility_key_enabled__label" comment="Preference title">Show utility key</string>
     <string name="pref__keyboard__utility_key_enabled__summary" comment="Preference summary">Shows a configurable utility key next to space bar</string>
     <string name="pref__keyboard__utility_key_action__label" comment="Preference title">Utility key action</string>
-    <string name="pref__keyboard__space_bar_language_display_enabled__label" comment="Preference title">Display language on space bar</string>
-    <string name="pref__keyboard__space_bar_language_display_enabled__summary" comment="Preference summary">Displays the current active language name on the space bar</string>
+    <string name="pref__keyboard__space_bar_mode__label" comment="Preference title">Spacebar label</string>
+    <string name="pref__keyboard__capitalization_behavior__label" comment="Preference title">Capitalization behavior</string>
     <string name="pref__keyboard__font_size_multiplier__label" comment="Preference title">Font size multiplier</string>
     <string name="pref__keyboard__group_layout__label" comment="Preference group title">Layout</string>
     <string name="pref__keyboard__one_handed_mode__label" comment="Preference title">One-handed mode</string>
@@ -324,6 +325,7 @@
     <string name="pref__keyboard__long_press_delay__label" comment="Preference title">Long key press delay</string>
     <string name="pref__keyboard__space_bar_switches_to_characters__label" comment="Preference title">Space bar switches to characters</string>
     <string name="pref__keyboard__space_bar_switches_to_characters__summary" comment="Preference summary">Automatically switches back to characters when in symbols or numeric</string>
+    <string name="pref__keyboard__incognito_indicator__label" comment="Preference title">Incognito indicator</string>
 
     <!-- Smartbar strings -->
     <string name="settings__smartbar__title" comment="Title of Smartbar screen">Smartbar</string>
@@ -433,6 +435,7 @@
     <string name="pref__advanced__settings_theme__light" comment="Possible value of Settings theme preference in Advanced">Light</string>
     <string name="pref__advanced__settings_theme__dark" comment="Possible value of Settings theme preference in Advanced">Dark</string>
     <string name="pref__advanced__settings_theme__amoled_dark" comment="Possible value of Settings theme preference in Advanced">AMOLED Dark</string>
+    <string name="pref__advanced__settings_material_you__label" comment="Label of Material You preference in Advanced">Use Material You</string>
     <string name="pref__advanced__settings_language__label" comment="Label of Settings language preference in Advanced">Settings language</string>
     <string name="pref__advanced__show_app_icon__label" comment="Label of Show app icon preference in Advanced">Show app icon in launcher</string>
     <string name="pref__advanced__show_app_icon__summary_atleast_q" comment="Summary of Show app icon preference in Advanced for Android 10+">Always enabled on Android 10+ due to restrictions of the system</string>
@@ -477,6 +480,13 @@
     <string name="setup__select_ime__description">{app_name} is now enabled in your system. To actively use it, switch to {app_name} by selecting it in the input selector dialog!</string>
     <string name="setup__select_ime__switch_keyboard_btn">Switch Keyboard</string>
 
+    <string name="setup__grant_notification_permission__title">Permit Crash Report Notifications</string>
+    <string name="setup__grant_notification_permission__description">As of Android 13+, apps must ask for permission to
+        send notifications. In Florisboard, this is only used to open a crash report screen in the event of a crash.
+        This permission can be changed at any time in the system settings.
+    </string>
+    <string name="setup__grant_notification_permission__btn">Grant Permission</string>
+
     <string name="setup__finish_up__title">Finish Up</string>
     <string name="setup__finish_up__description_p1">{app_name} is now enabled in the system and ready to be customized by you.</string>
     <string name="setup__finish_up__description_p2">If you encounter any issues, bugs, crashes or just want to make a suggestion, check out the project repository from the about screen!</string>
@@ -494,6 +504,10 @@
     <string name="backup_and_restore__back_up__files_ime_keyboard">Keyboard extensions</string>
     <string name="backup_and_restore__back_up__files_ime_spelling">Spelling extensions / dictionaries</string>
     <string name="backup_and_restore__back_up__files_ime_theme">Theme extensions</string>
+    <string name="backup_and_restore__back_up__files_clipboard_history">Clipboard history</string>
+    <string name="backup_and_restore__back_up__files_clipboard_history__clipboard_text_items">Text items</string>
+    <string name="backup_and_restore__back_up__files_clipboard_history__clipboard_image_items">Images</string>
+    <string name="backup_and_restore__back_up__files_clipboard_history__clipboard_video_items">Videos</string>
     <string name="backup_and_restore__back_up__success">Successfully exported backup archive!</string>
     <string name="backup_and_restore__back_up__failure">Failed to export backup archive: {error_message}</string>
     <string name="backup_and_restore__restore__title">Restore data</string>
@@ -569,6 +583,11 @@
     <string name="pref__clipboard__max_history_size__label">Max history size</string>
     <string name="pref__clipboard__clear_primary_clip_deletes_last_item__label">Clear primary clip affects history</string>
     <string name="pref__clipboard__clear_primary_clip_deletes_last_item__summary">Clearing the primary clip also deletes the latest history entry</string>
+    <string name="send_to_clipboard__unknown_error">An unknown error occurred. Please try again!</string>
+    <string name="send_to_clipboard__type_not_supported_error">This media type is not supported.</string>
+    <string name="send_to_clipboard__android_version_to_old_error">The version of android is to old for this feature.
+    </string>
+    <string name="send_to_clipboard__description__copied_image_to_clipboard">Copied below image to clipboard.</string>
 
 
     <!-- Devtools strings -->
@@ -715,6 +734,9 @@
     <string name="enum__candidates_display_mode__dynamic" comment="Enum value label">Dynamic width</string>
     <string name="enum__candidates_display_mode__dynamic_scrollable" comment="Enum value label">Dynamic width &amp; scrollable</string>
 
+    <string name="enum__capitalization_behavior__capslock_by_double_tap" comment="Enum value label">Enable Capslock by double tapping shift</string>
+    <string name="enum__capitalization_behavior__capslock_by_cycle" comment="Enum value label">Switch to the next capitalization step each time the shift key is pressed</string>
+
     <string name="enum__display_colors_as__hex8" comment="Enum value label">Hexadecimal</string>
     <string name="enum__display_colors_as__rgba" comment="Enum value label">Red Green Blue Alpha</string>
 
@@ -769,6 +791,9 @@
     <string name="enum__incognito_mode__dynamic_on_off" comment="Enum value label">Dynamically on/off</string>
     <string name="enum__incognito_mode__dynamic_on_off__description" comment="Enum value description">Recommended option. Incognito mode will be dynamically enabled or disabled either through the target app\'s passed options or by manually toggling it through the incognito quick action in the Smartbar.</string>
 
+    <string name="enum__incognito_display_mode__replace_shared_actions_toggle" comment="Enum value label">Replace shared actions toggle icon with the incognito indicator</string>
+    <string name="enum__incognito_display_mode__display_behind_keyboard" comment="Enum value label">Display the incognito indicator behind the keyboard</string>
+
     <string name="enum__input_feedback_activation_mode__audio_respect_system_settings" comment="Enum value label">Dynamically play sounds for input events, depending on system settings</string>
     <string name="enum__input_feedback_activation_mode__audio_ignore_system_settings" comment="Enum value label">Always play sounds for input events, regardless of system settings</string>
     <string name="enum__input_feedback_activation_mode__haptic_respect_system_settings" comment="Enum value label">Dynamically vibrate for input events, depending on system settings</string>
@@ -807,6 +832,10 @@
     <string name="enum__snygg_level__advanced__description" comment="Enum value description">All properties are shown, properties and rules are translated.</string>
     <string name="enum__snygg_level__developer" comment="Enum value label">Developer</string>
     <string name="enum__snygg_level__developer__description" comment="Enum value description">All properties are shown, properties and rules are displayed as written in the stylesheet file itself.</string>
+
+    <string name="enum__space_bar_mode__nothing" comment="Enum value label">No label</string>
+    <string name="enum__space_bar_mode__current_language" comment="Enum value label">Current language</string>
+    <string name="enum__space_bar_mode__space_bar_key" comment="Enum value label">␣</string>
 
     <string name="enum__spelling_language_mode__use_system_languages" comment="Enum value label">Use system languages</string>
     <string name="enum__spelling_language_mode__use_keyboard_subtypes" comment="Enum value label">Use keyboard subtypes</string>
@@ -849,7 +878,6 @@
     <string name="enum__utility_key_action__switch_language" comment="Enum value label">Switch language</string>
     <string name="enum__utility_key_action__switch_keyboard_app" comment="Enum value label">Switch keyboard app</string>
     <string name="enum__utility_key_action__dynamic_switch_language_emojis" comment="Enum value label">Dynamic: Switch to emojis / Switch language</string>
-
 
     <!-- Unit strings (symbols) -->
     <string name="unit__hours__symbol" translatable="false">{v} h</string>

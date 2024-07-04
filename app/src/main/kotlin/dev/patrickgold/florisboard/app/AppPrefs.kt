@@ -21,11 +21,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalConfiguration
 import dev.patrickgold.florisboard.app.settings.theme.DisplayColorsAs
 import dev.patrickgold.florisboard.app.settings.theme.DisplayKbdAfterDialogs
+import dev.patrickgold.florisboard.app.setup.NotificationPermissionState
 import dev.patrickgold.florisboard.ime.core.DisplayLanguageNamesIn
 import dev.patrickgold.florisboard.ime.core.Subtype
+import dev.patrickgold.florisboard.ime.input.CapitalizationBehavior
 import dev.patrickgold.florisboard.ime.input.HapticVibrationMode
 import dev.patrickgold.florisboard.ime.input.InputFeedbackActivationMode
 import dev.patrickgold.florisboard.ime.keyboard.IncognitoMode
+import dev.patrickgold.florisboard.ime.keyboard.SpaceBarMode
 import dev.patrickgold.florisboard.ime.landscapeinput.LandscapeInputUiMode
 import dev.patrickgold.florisboard.ime.media.emoji.EmojiHairStyle
 import dev.patrickgold.florisboard.ime.media.emoji.EmojiRecentlyUsedHelper
@@ -34,6 +37,7 @@ import dev.patrickgold.florisboard.ime.nlp.SpellingLanguageMode
 import dev.patrickgold.florisboard.ime.onehanded.OneHandedMode
 import dev.patrickgold.florisboard.ime.smartbar.CandidatesDisplayMode
 import dev.patrickgold.florisboard.ime.smartbar.ExtendedActionsPlacement
+import dev.patrickgold.florisboard.ime.smartbar.IncognitoDisplayMode
 import dev.patrickgold.florisboard.ime.smartbar.SmartbarLayout
 import dev.patrickgold.florisboard.ime.smartbar.quickaction.QuickActionArrangement
 import dev.patrickgold.florisboard.ime.text.gestures.SwipeAction
@@ -61,6 +65,10 @@ class AppPrefs : PreferenceModel("florisboard-app-prefs") {
         val settingsTheme = enum(
             key = "advanced__settings_theme",
             default = AppTheme.AUTO,
+        )
+        val useMaterialYou = boolean(
+            key = "advanced__use_material_you",
+            default = true,
         )
         val settingsLanguage = string(
             key = "advanced__settings_language",
@@ -364,6 +372,10 @@ class AppPrefs : PreferenceModel("florisboard-app-prefs") {
             key = "internal__version_last_changelog",
             default = VersionName.DEFAULT_RAW,
         )
+        val notificationPermissionState = enum(
+            key = "internal__notification_permission_state",
+            default = NotificationPermissionState.NOT_SET,
+        )
     }
 
     val keyboard = Keyboard()
@@ -396,9 +408,13 @@ class AppPrefs : PreferenceModel("florisboard-app-prefs") {
             key = "keyboard__utility_key_action",
             default = UtilityKeyAction.DYNAMIC_SWITCH_LANGUAGE_EMOJIS,
         )
-        val spaceBarLanguageDisplayEnabled = boolean(
-            key = "keyboard__space_bar_language_display_enabled",
-            default = true,
+        val spaceBarMode = enum(
+            key = "keyboard__space_bar_display_mode",
+            default = SpaceBarMode.CURRENT_LANGUAGE,
+        )
+        val capitalizationBehavior = enum(
+            key = "keyboard__capitalization_behavior",
+            default = CapitalizationBehavior.CAPSLOCK_BY_DOUBLE_TAP,
         )
         val fontSizeMultiplierPortrait = int(
             key = "keyboard__font_size_multiplier_portrait",
@@ -459,6 +475,10 @@ class AppPrefs : PreferenceModel("florisboard-app-prefs") {
         val spaceBarSwitchesToCharacters = boolean(
             key = "keyboard__space_bar_switches_to_characters",
             default = true,
+        )
+        val incognitoDisplayMode = enum(
+            key = "keyboard__incognito_indicator",
+            default = IncognitoDisplayMode.DISPLAY_BEHIND_KEYBOARD,
         )
 
         fun keyHintConfiguration(): KeyHintConfiguration {

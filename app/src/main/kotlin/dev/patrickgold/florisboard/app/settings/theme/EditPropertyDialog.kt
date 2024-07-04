@@ -30,13 +30,16 @@ import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -45,7 +48,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -67,8 +69,6 @@ import dev.patrickgold.florisboard.lib.compose.FlorisTextButton
 import dev.patrickgold.florisboard.lib.compose.rippleClickable
 import dev.patrickgold.florisboard.lib.compose.stringRes
 import dev.patrickgold.florisboard.lib.ext.ExtensionValidation
-import dev.patrickgold.florisboard.lib.kotlin.curlyFormat
-import dev.patrickgold.florisboard.lib.kotlin.toStringWithoutDotZero
 import dev.patrickgold.florisboard.lib.rememberValidationResult
 import dev.patrickgold.florisboard.lib.snygg.SnyggLevel
 import dev.patrickgold.florisboard.lib.snygg.SnyggPropertySetSpec
@@ -92,10 +92,12 @@ import dev.patrickgold.florisboard.lib.snygg.value.SnyggValue
 import dev.patrickgold.florisboard.lib.snygg.value.SnyggValueEncoder
 import dev.patrickgold.florisboard.lib.snygg.value.SnyggVarValueEncoders
 import dev.patrickgold.florisboard.lib.stripUnicodeCtrlChars
-import dev.patrickgold.jetpref.material.ui.ExperimentalJetPrefMaterialUi
+import dev.patrickgold.jetpref.material.ui.ExperimentalJetPrefMaterial3Ui
 import dev.patrickgold.jetpref.material.ui.JetPrefAlertDialog
 import dev.patrickgold.jetpref.material.ui.JetPrefColorPicker
 import dev.patrickgold.jetpref.material.ui.rememberJetPrefColorPickerState
+import org.florisboard.lib.kotlin.curlyFormat
+import org.florisboard.lib.kotlin.toStringWithoutDotZero
 
 internal val SnyggEmptyPropertyInfoForAdding = PropertyInfo(
     name = "- select -",
@@ -216,7 +218,7 @@ internal fun EditPropertyDialog(
         },
         onNeutral = onDelete,
         neutralColors = ButtonDefaults.textButtonColors(
-            contentColor = MaterialTheme.colors.error,
+            contentColor = MaterialTheme.colorScheme.error,
         ),
     ) {
         Column {
@@ -224,7 +226,7 @@ internal fun EditPropertyDialog(
                 Text(
                     modifier = Modifier.padding(bottom = 16.dp),
                     text = stringRes(R.string.settings__theme_editor__property_already_exists),
-                    color = MaterialTheme.colors.error,
+                    color = MaterialTheme.colorScheme.error,
                 )
             }
 
@@ -349,7 +351,7 @@ private fun PropertyValueEncoderDropdown(
     )
 }
 
-@OptIn(ExperimentalJetPrefMaterialUi::class)
+@OptIn(ExperimentalJetPrefMaterial3Ui::class)
 @Composable
 private fun PropertyValueEditor(
     value: SnyggValue,
@@ -365,7 +367,7 @@ private fun PropertyValueEditor(
                 listOf("") + definedVariables.keys.toList()
             }
             val selectedIndex by remember(variableKeys, value.key) {
-                mutableStateOf(variableKeys.indexOf(value.key).coerceIn(variableKeys.indices))
+                mutableIntStateOf(variableKeys.indexOf(value.key).coerceIn(variableKeys.indices))
             }
             var expanded by remember { mutableStateOf(false) }
             Row(
@@ -413,7 +415,7 @@ private fun PropertyValueEditor(
                                 .padding(end = 12.dp)
                                 .weight(1f),
                             text = colorPickerStr,
-                            style = MaterialTheme.typography.body2,
+                            style = MaterialTheme.typography.bodyMedium,
                             fontFamily = FontFamily.Monospace,
                         )
                         SnyggValueIcon(
@@ -453,7 +455,7 @@ private fun PropertyValueEditor(
                         FlorisIconButton(
                             onClick = { showSyntaxHelp = !showSyntaxHelp },
                             modifier = Modifier.offset(x = 12.dp),
-                            icon = painterResource(R.drawable.ic_help_outline),
+                            icon = Icons.Default.HelpOutline,
                         )
                     },
                 ) {
@@ -473,7 +475,7 @@ private fun PropertyValueEditor(
                                         rgb(r,g,b)
                                          -> r,g,b in 0..255
                                     """.trimIndent(),
-                                    style = MaterialTheme.typography.body2,
+                                    style = MaterialTheme.typography.bodyMedium,
                                     fontFamily = FontFamily.Monospace,
                                 )
                             }
@@ -528,7 +530,7 @@ private fun PropertyValueEditor(
             }
 
             val selectedIndex by remember(value.colorName) {
-                mutableStateOf(
+                mutableIntStateOf(
                     MaterialYouColor.colorNames.indexOf(value.colorName).coerceIn(MaterialYouColor.colorNames.indices)
                 )
             }
@@ -676,7 +678,7 @@ private fun PropertyValueEditor(
                     Box(
                         modifier = Modifier
                             .requiredSize(40.dp)
-                            .border(1.dp, MaterialTheme.colors.onBackground, shape),
+                            .border(1.dp, MaterialTheme.colorScheme.onBackground, shape),
                     )
                     Column {
                         FlorisChip(
@@ -756,13 +758,13 @@ private fun PropertyValueEditor(
 
             is SnyggPercentShapeValue -> {
                 var showDialogInitPercentage by rememberSaveable {
-                    mutableStateOf(0)
+                    mutableIntStateOf(0)
                 }
                 var showDialogForCorner by rememberSaveable {
                     mutableStateOf<ShapeCorner?>(null)
                 }
                 var topStart by rememberSaveable {
-                    mutableStateOf(
+                    mutableIntStateOf(
                         when (value) {
                             is SnyggCutCornerPercentShapeValue -> value.topStart
                             is SnyggRoundedCornerPercentShapeValue -> value.topStart
@@ -770,7 +772,7 @@ private fun PropertyValueEditor(
                     )
                 }
                 var topEnd by rememberSaveable {
-                    mutableStateOf(
+                    mutableIntStateOf(
                         when (value) {
                             is SnyggCutCornerPercentShapeValue -> value.topEnd
                             is SnyggRoundedCornerPercentShapeValue -> value.topEnd
@@ -778,7 +780,7 @@ private fun PropertyValueEditor(
                     )
                 }
                 var bottomEnd by rememberSaveable {
-                    mutableStateOf(
+                    mutableIntStateOf(
                         when (value) {
                             is SnyggCutCornerPercentShapeValue -> value.bottomEnd
                             is SnyggRoundedCornerPercentShapeValue -> value.bottomEnd
@@ -786,7 +788,7 @@ private fun PropertyValueEditor(
                     )
                 }
                 var bottomStart by rememberSaveable {
-                    mutableStateOf(
+                    mutableIntStateOf(
                         when (value) {
                             is SnyggCutCornerPercentShapeValue -> value.bottomStart
                             is SnyggRoundedCornerPercentShapeValue -> value.bottomStart
@@ -845,7 +847,7 @@ private fun PropertyValueEditor(
                     Box(
                         modifier = Modifier
                             .requiredSize(40.dp)
-                            .border(1.dp, MaterialTheme.colors.onBackground, shape),
+                            .border(1.dp, MaterialTheme.colorScheme.onBackground, shape),
                     )
                     Column {
                         FlorisChip(
@@ -934,7 +936,7 @@ private fun PropertyValueEditor(
                     Box(
                         modifier = Modifier
                             .requiredSize(40.dp)
-                            .border(1.dp, MaterialTheme.colors.onBackground, value.shape),
+                            .border(1.dp, MaterialTheme.colorScheme.onBackground, value.shape),
                     )
                 }
             }

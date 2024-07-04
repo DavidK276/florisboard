@@ -20,8 +20,11 @@ import androidx.compose.runtime.Composable
 import dev.patrickgold.florisboard.R
 import dev.patrickgold.florisboard.app.LocalNavController
 import dev.patrickgold.florisboard.app.Routes
+import dev.patrickgold.florisboard.ime.input.CapitalizationBehavior
+import dev.patrickgold.florisboard.ime.keyboard.SpaceBarMode
 import dev.patrickgold.florisboard.ime.landscapeinput.LandscapeInputUiMode
 import dev.patrickgold.florisboard.ime.onehanded.OneHandedMode
+import dev.patrickgold.florisboard.ime.smartbar.IncognitoDisplayMode
 import dev.patrickgold.florisboard.ime.text.key.KeyHintMode
 import dev.patrickgold.florisboard.ime.text.key.UtilityKeyAction
 import dev.patrickgold.florisboard.lib.compose.FlorisScreen
@@ -72,10 +75,15 @@ fun KeyboardScreen() = FlorisScreen {
             entries = UtilityKeyAction.listEntries(),
             visibleIf = { prefs.keyboard.utilityKeyEnabled isEqualTo true },
         )
-        SwitchPreference(
-            prefs.keyboard.spaceBarLanguageDisplayEnabled,
-            title = stringRes(R.string.pref__keyboard__space_bar_language_display_enabled__label),
-            summary = stringRes(R.string.pref__keyboard__space_bar_language_display_enabled__summary),
+        ListPreference(
+            prefs.keyboard.spaceBarMode,
+            title = stringRes(R.string.pref__keyboard__space_bar_mode__label),
+            entries = SpaceBarMode.listEntries(),
+        )
+        ListPreference(
+            prefs.keyboard.capitalizationBehavior,
+            title = stringRes(R.string.pref__keyboard__capitalization_behavior__label),
+            entries = CapitalizationBehavior.listEntries(),
         )
         DialogSliderPreference(
             primaryPref = prefs.keyboard.fontSizeMultiplierPortrait,
@@ -87,6 +95,11 @@ fun KeyboardScreen() = FlorisScreen {
             min = 50,
             max = 150,
             stepIncrement = 5,
+        )
+        ListPreference(
+            listPref = prefs.keyboard.incognitoDisplayMode,
+            title = stringRes(R.string.pref__keyboard__incognito_indicator__label),
+            entries = IncognitoDisplayMode.listEntries(),
         )
 
         PreferenceGroup(title = stringRes(R.string.pref__keyboard__group_layout__label)) {

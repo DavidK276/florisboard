@@ -33,7 +33,6 @@ import dev.patrickgold.florisboard.lib.android.AndroidClipboardManager_OnPrimary
 import dev.patrickgold.florisboard.lib.android.setOrClearPrimaryClip
 import dev.patrickgold.florisboard.lib.android.showShortToast
 import dev.patrickgold.florisboard.lib.android.systemService
-import dev.patrickgold.florisboard.lib.kotlin.tryOrNull
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -46,6 +45,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import org.florisboard.lib.kotlin.tryOrNull
 import java.io.Closeable
 
 /**
@@ -224,7 +224,14 @@ class ClipboardManager(
         if (prefs.clipboard.historyEnabled.get()) {
             val historyElement = history().all.firstOrNull { it.type == ItemType.TEXT && it.text == newItem.text }
             if (historyElement != null) {
-                moveToTheBeginning(historyElement, newItem)
+                moveToTheBeginning(
+                    oldItem = historyElement,
+                    newItem = if (historyElement.isPinned) {
+                        newItem.copy(isPinned = true)
+                    } else {
+                        newItem
+                    }
+                )
             } else {
                 insertClip(newItem)
             }
@@ -286,6 +293,34 @@ class ClipboardManager(
                 item.close(appContext)
             }
             clipHistoryDao?.deleteAll()
+        }
+    }
+
+
+    /**
+     * Restore the clipboard history from a [List]
+     *
+     * @param shouldReset if the history should be reset
+     * @param items the [ClipboardItem] list with the new items
+     */
+    fun restoreHistory(items: List<ClipboardItem>, shouldReset: Boolean, itemType: ItemType) {
+        ioScope.launch {
+            if (shouldReset) {
+                for (item in history().all) {
+                    item.close(appContext)
+                }
+                clipHistoryDao?.deleteAllFromType(itemType)
+                for (item in items) {
+                    this@ClipboardManager.insertClip(item.copy(id = 0))
+                }
+            } else {
+                val currentHistory = this@ClipboardManager.history().all
+                for (item in items) {
+                    if (!currentHistory.map { it.copy(id = 0) }.contains(item.copy(id = 0))) {
+                        this@ClipboardManager.insertClip(item.copy(id = 0))
+                    }
+                }
+            }
         }
     }
 
